@@ -14,7 +14,7 @@ func TestLoadFileToString(t *testing.T) {
 		t.Errorf("File at path %s exists, but shouldn't for the purpose of testing. Please remove it.", MISS_PATH)
 		return
 	}
-	content, err := loadFileToString(MISS_PATH)
+	content, err := LoadFileToString(MISS_PATH)
 	if err == nil {
 		t.Errorf("loadFileToString doesn't return an error while trying to open a nonexistent file at path: %s", MISS_PATH)
 	}
@@ -34,7 +34,7 @@ func TestLoadFileToString(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to write temporary file: %s", err.Error())
 	}
-	content, err = loadFileToString(tFile)
+	content, err = LoadFileToString(tFile)
 	if err == nil {
 		t.Error("Expected permission error loading file to string. Got no error.")
 	}
@@ -47,7 +47,7 @@ func TestLoadFileToString(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to write temporary file: %s", err.Error())
 	}
-	content, err = loadFileToString(tFile2)
+	content, err = LoadFileToString(tFile2)
 	if err != nil {
 		t.Errorf("Failed loading file to string: %s", err.Error())
 	}
