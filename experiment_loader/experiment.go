@@ -16,12 +16,14 @@ func LoadExperimentDescriptor(filepath string) (*ExperimentDescriptor, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error loading experiment descriptor from file: %s", err.Error())
 	}
+	return unmarshalDescriptor(content)
+}
 
+func unmarshalDescriptor(content []byte) (*ExperimentDescriptor, error) {
 	descr := &ExperimentDescriptor{}
-	err = xml.Unmarshal(content, &descr)
+	err := xml.Unmarshal(content, &descr)
 	if err != nil {
 		return nil, fmt.Errorf("Error unmarshaling experiment descriptor: %s", err.Error())
 	}
-	fmt.Println(descr.Name)
-	return nil, nil
+	return descr, nil
 }
