@@ -7,8 +7,9 @@ import (
 )
 
 type ExperimentDescriptor struct {
-	XMLName xml.Name `xml:"Person"`
-	Name    string   `xml:"Name"`
+	XMLName            xml.Name `xml:"ExperimentDescriptor"`
+	Name               string   `xml:"Name"`
+	NumberOfGeneration int      `xml:"NumberOfGenerations"`
 }
 
 func LoadExperimentDescriptor(filepath string) (*ExperimentDescriptor, error) {
