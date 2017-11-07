@@ -24,5 +24,16 @@ func (v1 *VisualObject) Equal(v2 *VisualObject) (equal bool, inequalityMessage s
 		}
 		return false, "Visual Object II is nil, but not Visual Object I"
 	}
+
+	if v1.objectColor == nil || v2.objectColor == nil {
+		if v1.objectColor == nil && v2.objectColor == nil {
+			return true, ""
+		}
+		return false, "Color not equal"
+	}
+
+	if *v1.objectColor != *v2.objectColor {
+		return false, "Color not equal"
+	}
 	return true, ""
 }

@@ -12,7 +12,9 @@ func TestVisualObjectsEqual(t *testing.T) {
 		expectedInequalityMessage string
 	}{
 		{nil, NewVisualObject(&Color{true}), false, "Visual Object I is nil, but not Visual Object II"},
+		{NewVisualObject(&Color{false}), NewVisualObject(&Color{true}), false, "Color not equal"},
 		{nil, nil, true, ""},
+		{NewVisualObject(&Color{true}), NewVisualObject(&Color{true}), true, ""},
 	}
 
 	for i, aCase := range cases {
