@@ -1,7 +1,13 @@
 package visual_object_loader
 
 import (
+	vis_obj "DrawLearning/visual_object"
 	"testing"
+)
+
+var (
+	aTrue  = true
+	aFalse = false
 )
 
 func TestLoadVisualObject(t *testing.T) {
@@ -10,8 +16,8 @@ func TestLoadVisualObject(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected non-nil error for nonexisting filepath, got nil")
 	}
-	if visObj != nil {
-		t.Errorf("Expected visual object descriptor for non-existing filepath to be nil, got %v", visObj)
+	if equal, ineqMessage := visObj.Equal(nil); !equal {
+		t.Errorf("Expected visual object descriptor for non-existing filepath to be nil, got inequality message", ineqMessage)
 	}
 
 	badFormatPath := "../test_files/visual_object_descriptors/invalid.xml"
@@ -19,8 +25,8 @@ func TestLoadVisualObject(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected non-nil error for invalid format filepath, got nil")
 	}
-	if visObj != nil {
-		t.Errorf("Expected visual object descriptor for invalid format filepath to be nil, got %v", visObj)
+	if equal, ineqMessage := visObj.Equal(nil); !equal {
+		t.Errorf("Expected visual object descriptor for invalid format filepath to be nil, got inequality message", ineqMessage)
 	}
 
 	validFormatPath := "../test_files/visual_object_descriptors/valid_visual_object.xml"
@@ -28,12 +34,9 @@ func TestLoadVisualObject(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected a nil error for valid format filepath, got %s", err.Error())
 	}
-	if visObj == nil {
-		t.Errorf("Expected a non-nil descriptor for valid format filepath, got nil")
-		return
-	}
-	if visObj.Color != true {
-		t.Errorf("Expected color to be %v, got %v", true, visObj.Color)
+	expectedVisObj := vis_obj.NewVisualObject(&vis_obj.Color{true})
+	if equal, ineqMessage := visObj.Equal(expectedVisObj); !equal {
+		t.Errorf("Expected visual object descriptor for invalid format filepath to be nil, got inequality message", ineqMessage)
 	}
 }
 
@@ -60,16 +63,16 @@ func TestUnmarshalVisualObject(t *testing.T) {
 	cases := []struct {
 		content       []byte
 		expectedError bool
-		expectedColor bool
+		expectedColor *bool
 	}{
 		//Error cases
-		{[]byte(INVALID_FORMAT), true, false},
-		{[]byte(INVALID_FORMAT_II), true, false},
-		{[]byte{}, true, false},
-		{nil, true, false},
+		{[]byte(INVALID_FORMAT), true, &aFalse},
+		{[]byte(INVALID_FORMAT_II), true, &aFalse},
+		{[]byte{}, true, &aFalse},
+		{nil, true, &aFalse},
 		//Valid cases
-		{[]byte(VALID_FORMAT), false, true},
-		{[]byte(VALID_FORMAT_II), false, false},
+		{[]byte(VALID_FORMAT), false, &aTrue},
+		{[]byte(VALID_FORMAT_II), false, &aFalse},
 	}
 
 	for i, aCase := range cases {
@@ -83,8 +86,39 @@ func TestUnmarshalVisualObject(t *testing.T) {
 			}
 			continue
 		}
-		if visObj.Color != aCase.expectedColor {
-			t.Errorf("Error in case %d. Expected color %v, got %v", i, aCase.expectedColor, visObj.Color)
+		if *visObj.Color != *aCase.expectedColor {
+			t.Errorf("Error in case %d. Expected color %v, got %v", i, *aCase.expectedColor, *visObj.Color)
+		}
+	}
+}
+
+func TestConvertToDomainVisObject(t *testing.T) {
+	visObjColorTrue := vis_obj.NewVisualObject(&vis_obj.Color{true})
+	visObjColorFalse := vis_obj.NewVisualObject(&vis_obj.Color{false})
+
+	cases := []struct {
+		loadedObject              *VisualObject_
+		expectedDomainObject      *vis_obj.VisualObject
+		expectedEqual             bool
+		expectedInequalityMessage string
+	}{
+		//Control case:
+		{&VisualObject_{}, nil, false, "Visual Object II is nil, but not Visual Object I"},
+		//Actual cases:
+		{nil, nil, true, ""},
+		{&VisualObject_{}, vis_obj.NewVisualObject(nil), true, ""},
+		{&VisualObject_{Color: &aTrue}, visObjColorTrue, true, ""},
+		{&VisualObject_{Color: &aFalse}, visObjColorFalse, true, ""},
+	}
+
+	for i, aCase := range cases {
+		domainVisObj := convertToDomainVisObject(aCase.loadedObject)
+		equal, inequalityMessage := domainVisObj.Equal(aCase.expectedDomainObject)
+		if equal != aCase.expectedEqual {
+			t.Errorf("Error in case %d. Expected equal %v, got %v", i, aCase.expectedEqual, equal)
+		}
+		if inequalityMessage != aCase.expectedInequalityMessage {
+			t.Errorf("Error in case %d. Expected inequality message %s, got %s", i, aCase.expectedInequalityMessage, inequalityMessage)
 		}
 	}
 }
