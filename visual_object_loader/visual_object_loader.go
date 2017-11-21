@@ -9,7 +9,13 @@ import (
 
 type VisualObject_ struct {
 	XMLName xml.Name `xml:"VisualObject"`
-	Color   *bool    `xml:"Color"`
+	Color   *Color_  `xml:"Color"`
+}
+
+type Color_ struct {
+	Red   uint64 `xml:"Red"`
+	Green uint64 `xml:"Green"`
+	Blue  uint64 `xml:"Blue"`
 }
 
 func LoadVisualObject(filepath string) (*vis_obj.VisualObject, error) {
@@ -41,5 +47,9 @@ func convertToDomainVisObject(visObj *VisualObject_) *vis_obj.VisualObject {
 		return vis_obj.NewVisualObject(nil)
 	}
 
-	return vis_obj.NewVisualObject(&vis_obj.Color{*visObj.Color})
+	return vis_obj.NewVisualObject(&vis_obj.Color{
+		Red:   visObj.Color.Red,
+		Green: visObj.Color.Green,
+		Blue:  visObj.Color.Blue,
+	})
 }

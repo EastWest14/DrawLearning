@@ -1,9 +1,5 @@
 package visual_object
 
-type Color struct {
-	White bool
-}
-
 type VisualObject struct {
 	objectColor *Color
 }
@@ -32,8 +28,8 @@ func (v1 *VisualObject) Equal(v2 *VisualObject) (equal bool, inequalityMessage s
 		return false, "Color not equal"
 	}
 
-	if *v1.objectColor != *v2.objectColor {
-		return false, "Color not equal"
+	if equal, inequalityMsg := v1.objectColor.Equal(v2.objectColor); !equal {
+		return false, "Visual objects' colors not equal: " + inequalityMsg
 	}
 	return true, ""
 }

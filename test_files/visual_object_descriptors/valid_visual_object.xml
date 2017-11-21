@@ -1,4 +1,8 @@
 <?xml version = "1.0" encoding = "utf-8"?>
 <VisualObject>
-   <Color>true</Color>
+   <Color>
+   	<Red>123</Red>
+   	<Green>234</Green>
+   	<Blue>99</Blue>
+   </Color>
 </VisualObject>

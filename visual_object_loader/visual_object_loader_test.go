@@ -5,11 +5,6 @@ import (
 	"testing"
 )
 
-var (
-	aTrue  = true
-	aFalse = false
-)
-
 func TestLoadVisualObject(t *testing.T) {
 	nonexistPath := "./nonexist.xml"
 	visObj, err := LoadVisualObject(nonexistPath)
@@ -17,7 +12,7 @@ func TestLoadVisualObject(t *testing.T) {
 		t.Errorf("Expected non-nil error for nonexisting filepath, got nil")
 	}
 	if equal, ineqMessage := visObj.Equal(nil); !equal {
-		t.Errorf("Expected visual object descriptor for non-existing filepath to be nil, got inequality message", ineqMessage)
+		t.Errorf("Expected visual object descriptor for non-existing filepath to be nil, got inequality message: %s", ineqMessage)
 	}
 
 	badFormatPath := "../test_files/visual_object_descriptors/invalid.xml"
@@ -26,7 +21,7 @@ func TestLoadVisualObject(t *testing.T) {
 		t.Errorf("Expected non-nil error for invalid format filepath, got nil")
 	}
 	if equal, ineqMessage := visObj.Equal(nil); !equal {
-		t.Errorf("Expected visual object descriptor for invalid format filepath to be nil, got inequality message", ineqMessage)
+		t.Errorf("Expected visual object descriptor for invalid format filepath to be nil, got inequality message: %s", ineqMessage)
 	}
 
 	validFormatPath := "../test_files/visual_object_descriptors/valid_visual_object.xml"
@@ -34,21 +29,27 @@ func TestLoadVisualObject(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected a nil error for valid format filepath, got %s", err.Error())
 	}
-	expectedVisObj := vis_obj.NewVisualObject(&vis_obj.Color{true})
+	expectedVisObj := vis_obj.NewVisualObject(&vis_obj.Color{Red: 123, Green: 234, Blue: 99})
 	if equal, ineqMessage := visObj.Equal(expectedVisObj); !equal {
-		t.Errorf("Expected visual object descriptor for invalid format filepath to be nil, got inequality message", ineqMessage)
+		t.Errorf("Expected visual object descriptor for invalid format filepath to be nil, got inequality message: %s", ineqMessage)
 	}
 }
 
 const (
 	VALID_FORMAT = `<?xml version = "1.0" encoding = "utf-8"?>
 <VisualObject>
-   <Color>true</Color>
+   <Color>
+   	<Red>123</Red>
+   	<Green>234</Green>
+   	<Blue>99</Blue>
+   </Color>
 </VisualObject>`
 
 	VALID_FORMAT_II = `<?xml version = "1.0" encoding = "utf-8"?>
 <VisualObject>
-   <Color>false</Color>
+   <Color>
+   	<Green>210</Green>
+   </Color>
 </VisualObject>`
 
 	INVALID_FORMAT = `<?xml version = "1.0" encoding = "utf-8"?>
@@ -63,16 +64,16 @@ func TestUnmarshalVisualObject(t *testing.T) {
 	cases := []struct {
 		content       []byte
 		expectedError bool
-		expectedColor *bool
+		expectedColor *Color_
 	}{
 		//Error cases
-		{[]byte(INVALID_FORMAT), true, &aFalse},
-		{[]byte(INVALID_FORMAT_II), true, &aFalse},
-		{[]byte{}, true, &aFalse},
-		{nil, true, &aFalse},
+		{[]byte(INVALID_FORMAT), true, nil},
+		{[]byte(INVALID_FORMAT_II), true, nil},
+		{[]byte{}, true, nil},
+		{nil, true, nil},
 		//Valid cases
-		{[]byte(VALID_FORMAT), false, &aTrue},
-		{[]byte(VALID_FORMAT_II), false, &aFalse},
+		{[]byte(VALID_FORMAT), false, &Color_{Red: 123, Green: 234, Blue: 99}},
+		{[]byte(VALID_FORMAT_II), false, &Color_{Green: 210}},
 	}
 
 	for i, aCase := range cases {
@@ -86,6 +87,16 @@ func TestUnmarshalVisualObject(t *testing.T) {
 			}
 			continue
 		}
+		if visObj.Color == nil || aCase.expectedColor == nil {
+			if visObj.Color == nil && aCase.expectedColor != nil {
+				t.Errorf("Error in case %d. Expected color %v, got nil", i, aCase.expectedColor)
+				continue
+			}
+			if visObj.Color != nil && aCase.expectedColor == nil {
+				t.Errorf("Error in case %d. Expected nil color, got %v", i, visObj.Color)
+				continue
+			}
+		}
 		if *visObj.Color != *aCase.expectedColor {
 			t.Errorf("Error in case %d. Expected color %v, got %v", i, *aCase.expectedColor, *visObj.Color)
 		}
@@ -93,8 +104,8 @@ func TestUnmarshalVisualObject(t *testing.T) {
 }
 
 func TestConvertToDomainVisObject(t *testing.T) {
-	visObjColorTrue := vis_obj.NewVisualObject(&vis_obj.Color{true})
-	visObjColorFalse := vis_obj.NewVisualObject(&vis_obj.Color{false})
+	visObjOne := vis_obj.NewVisualObject(&vis_obj.Color{Red: 123})
+	visObjTwo := vis_obj.NewVisualObject(&vis_obj.Color{Red: 1, Green: 2, Blue: 3})
 
 	cases := []struct {
 		loadedObject              *VisualObject_
@@ -107,8 +118,8 @@ func TestConvertToDomainVisObject(t *testing.T) {
 		//Actual cases:
 		{nil, nil, true, ""},
 		{&VisualObject_{}, vis_obj.NewVisualObject(nil), true, ""},
-		{&VisualObject_{Color: &aTrue}, visObjColorTrue, true, ""},
-		{&VisualObject_{Color: &aFalse}, visObjColorFalse, true, ""},
+		{&VisualObject_{Color: &Color_{Red: 123}}, visObjOne, true, ""},
+		{&VisualObject_{Color: &Color_{Red: 1, Green: 2, Blue: 3}}, visObjTwo, true, ""},
 	}
 
 	for i, aCase := range cases {
